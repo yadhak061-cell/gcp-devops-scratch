@@ -1,4 +1,8 @@
 terraform {
+  backend "gcs" {
+    bucket = "tfstate-devops-scratch-e9e43bdd"
+    prefix = "cluster"
+  }
   required_providers {
     google = {
       source  = "hashicorp/google"

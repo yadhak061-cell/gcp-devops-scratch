@@ -1,4 +1,8 @@
 terraform {
+  backend "gcs" {
+    bucket = "tfstate-devops-scratch-e9e43bdd"
+    prefix = "app"
+  }
   required_providers {
     google = {
       source  = "hashicorp/google"
@@ -17,9 +21,10 @@ provider "google" {
 }
 
 data "terraform_remote_state" "cluster" {
-  backend = "local"
+  backend = "gcs"
   config = {
-    path = "../cluster/terraform.tfstate"
+    bucket = "tfstate-devops-scratch-e9e43bdd"
+    prefix = "cluster"
   }
 }
 
