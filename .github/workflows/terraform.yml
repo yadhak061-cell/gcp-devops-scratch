@@ -1,0 +1,50 @@
+name: Day 1 GKE Cluster & App CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-cluster-and-app:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "PASTE_YOUR_WORKLOAD_IDENTITY_PROVIDER_HERE"
+          service_account: "terraform-ci@project-e9e43bdd-fac9-4d30-bc5.iam.gserviceaccount.com"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.2
+
+      - name: 1. Cluster - Init, Plan & Apply
+        working-directory: ./cluster
+        run: |
+          terraform init
+          terraform plan -no-color
+          terraform apply -auto-approve -no-color
+
+      - name: 2. Cluster - Outputs
+        working-directory: ./cluster
+        run: terraform output
+
+      - name: 3. App - Init, Plan & Apply
+        working-directory: ./app
+        run: |
+          terraform init
+          terraform plan -no-color
+          terraform apply -auto-approve -no-color
+
+      - name: 4. App - Outputs
+        working-directory: ./app
+        run: terraform output
