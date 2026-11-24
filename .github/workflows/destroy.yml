@@ -1,0 +1,38 @@
+name: Destroy Day 1 GKE Cluster & App
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  destroy-app-and-cluster:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/132326148535/locations/global/workloadIdentityPools/github-pool/providers/github-provider"
+          service_account: "terraform-ci@project-e9e43bdd-fac9-4d30-bc5.iam.gserviceaccount.com"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.17.2
+
+      - name: 1. Destroy App First (Frees LoadBalancer IP)
+        working-directory: ./app
+        run: |
+          terraform init
+          terraform destroy -auto-approve -no-color
+
+      - name: 2. Destroy Cluster Second
+        working-directory: ./cluster
+        run: |
+          terraform init
+          terraform destroy -auto-approve -no-color
